@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="OorjaFlow - AC Microgrid Simulation",
+    page_title="OorjaFlow - Hybrid System Simulation",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
