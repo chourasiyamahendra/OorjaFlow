@@ -245,7 +245,7 @@ html_simulation = r"""
 <body>
 
 <div class="header">
-  <h1>⚡ Oorja Flow: AC Microgrid Simulation</h1>
+  <h1>⚡ Oorja Flow: Hybrid System Simulation</h1>
   <p>AC-Coupled Solar & Storage Power Flow Simulator</p>
 </div>
 
