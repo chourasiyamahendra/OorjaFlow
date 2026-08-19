@@ -1,9 +1,19 @@
+import streamlit as st
+import streamlit.components.v1 as components
+
+st.set_page_config(
+    page_title="OorjaFlow - AC Microgrid Simulation",
+    page_icon="⚡",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+html_simulation = r"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oorja Flow - AC-Coupled Simulation</title>
 <style>
   :root {
     --bg-main: #f8fafc;
@@ -25,7 +35,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  body { background: var(--bg-main); color: var(--text-dark); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 16px; }
+  body { background: var(--bg-main); color: var(--text-dark); display: flex; flex-direction: column; align-items: center; padding: 10px; }
 
   .header { text-align: center; margin-bottom: 12px; }
   .header h1 { font-size: 22px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -33,12 +43,12 @@
 
   .diagram-container {
     position: relative;
-    width: 980px;
-    height: 610px;
+    width: 1020px;
+    height: 720px;
     background: #ffffff;
     border-radius: 28px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    padding: 24px 32px;
+    padding: 24px 34px;
     border: 1px solid #e2e8f0;
   }
 
@@ -54,7 +64,6 @@
 
   .pipe-base { stroke: #e2e8f0; stroke-width: 6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   
-  /* Low Speed Dotted Animation */
   .pipe-flow {
     stroke-width: 5;
     fill: none;
@@ -81,16 +90,16 @@
   .grid-layout {
     position: relative;
     display: grid;
-    grid-template-columns: 320px 1fr 320px;
-    grid-template-rows: 175px 140px 175px;
-    gap: 16px 0;
+    grid-template-columns: 330px 1fr 330px;
+    grid-template-rows: 220px 170px 220px;
+    gap: 20px 0;
     height: 100%;
     z-index: 2;
   }
 
   .card {
-    border-radius: 22px;
-    padding: 12px 16px;
+    border-radius: 24px;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -98,12 +107,13 @@
     border: 2px solid transparent;
   }
 
-  .card-top { display: flex; justify-content: space-between; align-items: center; }
+  .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
   .card-title { font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; }
 
   .icon-circle {
-    width: 56px;
-    height: 56px;
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
     border-radius: 50%;
     background: #fff;
     display: flex;
@@ -118,14 +128,14 @@
   }
 
   .metric-lbl { font-size: 11px; color: var(--text-muted); }
-  .slider-row { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; margin-top: 4px; }
+  .slider-row { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; margin-top: 6px; }
   .slider-row input[type=range] { flex: 1; height: 4px; cursor: pointer; accent-color: #2563eb; }
 
   .scenario-deck {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-top: 6px;
+    gap: 5px;
+    margin-top: 8px;
   }
   .btn-scen {
     background: #ffffff;
@@ -133,7 +143,7 @@
     color: #b45309;
     font-size: 10px;
     font-weight: 700;
-    padding: 3px 2px;
+    padding: 4px 2px;
     border-radius: 6px;
     cursor: pointer;
     text-align: center;
@@ -144,21 +154,26 @@
   .status-badge {
     font-size: 10px;
     font-weight: 800;
-    padding: 2px 7px;
+    padding: 3px 8px;
     border-radius: 10px;
     width: fit-content;
+    display: inline-block;
   }
 
   .bat-flow-readout {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 800;
     display: flex;
     align-items: center;
     gap: 4px;
-    margin-top: 2px;
+    margin-top: 4px;
+    padding: 3px 6px;
+    background: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    width: fit-content;
   }
 
-  /* Card specific styles */
   .card-pv { background: var(--pv-bg); border-color: var(--pv-border); grid-column: 1; grid-row: 1; }
   .card-pv .icon-circle { border-color: var(--pv-border); color: #d97706; }
 
@@ -177,7 +192,6 @@
   .card-bload { background: var(--bload-bg); border-color: var(--bload-border); grid-column: 3; grid-row: 3; }
   .card-bload .icon-circle { border-color: var(--bload-border); color: #c026d3; }
 
-  /* Center Hub (Hybrid Inverter) */
   .center-hub-wrapper {
     grid-column: 2;
     grid-row: 1 / span 3;
@@ -187,8 +201,8 @@
     position: relative;
   }
   .center-hub {
-    width: 108px;
-    height: 108px;
+    width: 114px;
+    height: 114px;
     border-radius: 50%;
     background: #ffffff;
     border: 4px solid var(--hub-border);
@@ -206,7 +220,7 @@
   
   .freq-badge {
     position: absolute;
-    transform: translateY(72px);
+    transform: translateY(76px);
     background: #1e293b;
     color: #38bdf8;
     padding: 3px 10px;
@@ -236,7 +250,7 @@
 </div>
 
 <div class="diagram-container">
-  <svg class="connections" viewBox="0 0 980 610">
+  <svg class="connections" viewBox="0 0 1020 720">
     <defs>
       <marker id="arrow-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
@@ -261,40 +275,32 @@
       </marker>
     </defs>
 
-    <!-- Base Pipes -->
-    <path class="pipe-base" d="M 160 175 V 215" />
-    <path class="pipe-base" d="M 320 270 H 435" />
-    <path class="pipe-base" d="M 320 520 H 490 V 360" />
-    <path class="pipe-base" d="M 660 95 H 490 V 250" />
-    <path class="pipe-base" d="M 545 305 H 660" />
-    <path class="pipe-base" d="M 490 360 V 520 H 660" />
+    <!-- Base Alignment Pipes -->
+    <path class="pipe-base" d="M 195 220 V 260" />
+    <path class="pipe-base" d="M 330 345 H 453" />
+    <path class="pipe-base" d="M 330 610 H 480 V 417" />
+    <path class="pipe-base" d="M 690 110 H 510 V 303" />
+    <path class="pipe-base" d="M 567 345 H 690" />
+    <path class="pipe-base" d="M 540 417 V 610 H 690" />
 
-    <!-- Solar PV to Grid Tied Inverter -->
-    <path id="flow-pv-gti" class="pipe-flow" d="M 160 175 V 215" stroke="#f59e0b" marker-end="url(#arrow-amber)" />
-
-    <!-- Grid Tied Inverter to Hybrid Inverter -->
-    <path id="flow-gti-hub" class="pipe-flow" d="M 320 270 H 435" stroke="#f97316" marker-end="url(#arrow-orange)" />
-
-    <!-- Battery Dotted Line -->
-    <path id="flow-bat-hub" class="pipe-flow" d="M 320 520 H 490 V 360" stroke="#10b981" />
-
-    <!-- Utility Grid Dotted Line -->
-    <path id="flow-grid-hub" class="pipe-flow" d="M 660 95 H 490 V 250" stroke="#2563eb" />
-
-    <!-- Load Lines -->
-    <path id="flow-hub-gload" class="pipe-flow" d="M 545 305 H 660" stroke="#8b5cf6" marker-end="url(#arrow-purple)" />
-    <path id="flow-hub-bload" class="pipe-flow" d="M 490 360 V 520 H 660" stroke="#d946ef" marker-end="url(#arrow-pink)" />
+    <!-- Animated Flows -->
+    <path id="flow-pv-gti" class="pipe-flow" d="M 195 220 V 260" stroke="#f59e0b" marker-end="url(#arrow-amber)" />
+    <path id="flow-gti-hub" class="pipe-flow" d="M 330 345 H 453" stroke="#f97316" marker-end="url(#arrow-orange)" />
+    <path id="flow-bat-hub" class="pipe-flow" d="M 330 610 H 480 V 417" stroke="#10b981" />
+    <path id="flow-grid-hub" class="pipe-flow" d="M 690 110 H 510 V 303" stroke="#2563eb" />
+    <path id="flow-hub-gload" class="pipe-flow" d="M 567 345 H 690" stroke="#8b5cf6" marker-end="url(#arrow-purple)" />
+    <path id="flow-hub-bload" class="pipe-flow" d="M 540 417 V 610 H 690" stroke="#d946ef" marker-end="url(#arrow-pink)" />
   </svg>
 
   <div class="grid-layout">
-    <!-- Solar PV Array Block -->
+    <!-- Solar PV Card -->
     <div class="card card-pv">
       <div class="card-top">
         <div>
           <div class="card-title">☀️ Solar PV Array</div>
-          <div class="metric-lbl">DC String Generation</div>
+          <div class="metric-lbl">DC Generation</div>
         </div>
-        <div class="icon-circle">☀️<span id="pv-node-kw">26.0</span></div>
+        <div class="icon-circle">☀️<span id="pv-node-kw">26.0 kW</span></div>
       </div>
       <div>
         <div class="slider-row">
@@ -303,10 +309,10 @@
           <span id="lbl-pv">26.0 kW</span>
         </div>
         <div class="scenario-deck">
-          <button class="btn-scen" onclick="setScenario(38, 85, 10, 6, true)">☀️ Peak</button>
-          <button class="btn-scen" onclick="setScenario(6, 50, 18, 10, true)">⛅ Cloud</button>
+          <button class="btn-scen" onclick="setScenario(35, 80, 12, 8, true)">☀️ Peak</button>
+          <button class="btn-scen" onclick="setScenario(6, 50, 16, 10, true)">⛅ Cloud</button>
           <button class="btn-scen" onclick="setScenario(0, 60, 14, 0, false)">🌙 Night</button>
-          <button class="btn-scen" onclick="setScenario(32, 100, 8, 0, false)">🔋 Curtail</button>
+          <button class="btn-scen" onclick="setScenario(30, 100, 8, 0, false)">🔋 Curtail</button>
         </div>
       </div>
     </div>
@@ -318,12 +324,12 @@
           <div class="card-title">⚡ Grid Tied Inverter</div>
           <div class="metric-lbl">Smart Port AC Feed</div>
         </div>
-        <div class="icon-circle">🔌<span id="gti-node-kw">26.0</span></div>
+        <div class="icon-circle">🔌<span id="gti-node-kw">26.0 kW</span></div>
       </div>
       <div class="metric-lbl" id="gti-status-msg">Synchronized to Microgrid</div>
     </div>
 
-    <!-- Battery Bank with Entering / Leaving Power Display -->
+    <!-- Battery Bank -->
     <div class="card card-bat">
       <div class="card-top">
         <div>
@@ -344,7 +350,7 @@
       </div>
     </div>
 
-    <!-- Hybrid Inverter (Clean Label) -->
+    <!-- Hybrid Inverter Hub -->
     <div class="center-hub-wrapper">
       <div class="center-hub">
         <div class="hub-icon">⚡</div>
@@ -360,7 +366,7 @@
           <div class="card-title">🗼 Utility Grid</div>
           <button id="btn-grid-fault" class="btn-fault healthy" onclick="toggleGridFault()">GRID: HEALTHY</button>
         </div>
-        <div class="icon-circle">🗼<span id="grid-node-kw">6.0</span></div>
+        <div class="icon-circle">🗼<span id="grid-node-kw">0.0 kW</span></div>
       </div>
       <div>
         <span id="grid-badge" class="status-badge" style="background:#dbeafe; color:#1d4ed8;">EXPORT ➔</span>
@@ -372,9 +378,9 @@
       <div class="card-top">
         <div>
           <div class="card-title">🏠 Grid Load</div>
-          <div class="metric-lbl">Non-Critical Circuits</div>
+          <div class="metric-lbl">Non-Critical Loads</div>
         </div>
-        <div class="icon-circle">🏠<span id="gload-node-kw">8.0</span></div>
+        <div class="icon-circle">🏠<span id="gload-node-kw">8.0 kW</span></div>
       </div>
       <div class="slider-row">
         <span>Load:</span>
@@ -390,7 +396,7 @@
           <div class="card-title">🛡️ Backup Load</div>
           <div class="metric-lbl">Critical UPS Bus</div>
         </div>
-        <div class="icon-circle">🛡️<span id="bload-node-kw">12.0</span></div>
+        <div class="icon-circle">🛡️<span id="bload-node-kw">12.0 kW</span></div>
       </div>
       <div class="slider-row">
         <span>Load:</span>
@@ -447,8 +453,8 @@
     let totalLoad = bload + gload;
     let pvOut = pvRaw;
     let freq = 50.00;
-    let batPower = 0.0; // >0 charging, <0 discharging
-    let gridPower = 0.0; // >0 export, <0 import
+    let batPower = 0.0;
+    let gridPower = 0.0;
 
     if (gridHealthy) {
       document.getElementById('gti-status-msg').innerText = "Grid Synchronized (50.00 Hz)";
@@ -468,7 +474,6 @@
         gridPower = -(deficit - fromBat);
       }
     } else {
-      // Off-Grid Phase Fault Mode
       if (soc >= 100 && pvRaw > bload) {
         pvOut = bload;
         freq = 51.50;
@@ -489,14 +494,12 @@
       gridPower = 0.0;
     }
 
-    // Update Numerical Readouts
-    document.getElementById('pv-node-kw').innerText = pvRaw.toFixed(1);
-    document.getElementById('gti-node-kw').innerText = pvOut.toFixed(1);
-    document.getElementById('gload-node-kw').innerText = gload.toFixed(1);
-    document.getElementById('bload-node-kw').innerText = bload.toFixed(1);
-    document.getElementById('grid-node-kw').innerText = Math.abs(gridPower).toFixed(1);
+    document.getElementById('pv-node-kw').innerText = pvRaw.toFixed(1) + " kW";
+    document.getElementById('gti-node-kw').innerText = pvOut.toFixed(1) + " kW";
+    document.getElementById('gload-node-kw').innerText = gload.toFixed(1) + " kW";
+    document.getElementById('bload-node-kw').innerText = bload.toFixed(1) + " kW";
+    document.getElementById('grid-node-kw').innerText = Math.abs(gridPower).toFixed(1) + " kW";
 
-    // Battery Entering / Leaving Logic
     const batBadge = document.getElementById('bat-badge');
     const flowBatHub = document.getElementById('flow-bat-hub');
     const batFlowInfo = document.getElementById('bat-flow-info');
@@ -506,10 +509,8 @@
       batBadge.innerText = "STATUS: CHARGING ↑";
       batBadge.style.background = "#dcfce7";
       batBadge.style.color = "#15803d";
-
       batFlowInfo.style.color = "#15803d";
       batFlowVal.innerText = `+${batPower.toFixed(1)} kW (Entering)`;
-
       flowBatHub.style.display = "block";
       flowBatHub.className.baseVal = "pipe-flow reverse-flow";
       flowBatHub.style.stroke = "#10b981";
@@ -519,10 +520,8 @@
       batBadge.innerText = "STATUS: DISCHARGING ↓";
       batBadge.style.background = "#cffafe";
       batBadge.style.color = "#0e7490";
-
       batFlowInfo.style.color = "#0891b2";
       batFlowVal.innerText = `-${Math.abs(batPower).toFixed(1)} kW (Leaving)`;
-
       flowBatHub.style.display = "block";
       flowBatHub.className.baseVal = "pipe-flow";
       flowBatHub.style.stroke = "#06b6d4";
@@ -532,14 +531,11 @@
       batBadge.innerText = "STATUS: IDLE";
       batBadge.style.background = "#f1f5f9";
       batBadge.style.color = "#64748b";
-
       batFlowInfo.style.color = "#64748b";
       batFlowVal.innerText = "0.0 kW (Idle)";
-
       flowBatHub.style.display = "none";
     }
 
-    // Grid Pipe & Arrow Configuration
     const gridBadge = document.getElementById('grid-badge');
     const flowGridHub = document.getElementById('flow-grid-hub');
     if (!gridHealthy) {
@@ -572,7 +568,6 @@
       flowGridHub.style.display = "none";
     }
 
-    // Load and Generation Lines
     document.getElementById('flow-pv-gti').style.display = pvRaw > 0 ? "block" : "none";
     document.getElementById('flow-gti-hub').style.display = pvOut > 0 ? "block" : "none";
     document.getElementById('flow-hub-gload').style.display = gload > 0 ? "block" : "none";
@@ -583,3 +578,6 @@
 </script>
 </body>
 </html>
+"""
+
+components.html(html_simulation, height=760, scrolling=False)
